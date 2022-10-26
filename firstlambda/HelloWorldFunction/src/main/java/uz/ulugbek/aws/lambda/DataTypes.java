@@ -3,6 +3,7 @@ package uz.ulugbek.aws.lambda;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 
 public class DataTypes {
 
@@ -24,5 +25,9 @@ public class DataTypes {
         });
 
         return matchingScores;
+    }
+
+    public void saveEmployeeData(Map<String, Integer> map) {
+        System.out.println(map);
     }
 }
