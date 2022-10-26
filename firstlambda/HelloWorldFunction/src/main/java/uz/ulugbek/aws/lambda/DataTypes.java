@@ -1,5 +1,8 @@
 package uz.ulugbek.aws.lambda;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,5 +54,12 @@ public class DataTypes {
         clinicalData.setHeartRate("80");
 
         return clinicalData;
+    }
+
+    public void getOutput(InputStream input, OutputStream output) throws IOException {
+        int data;
+        while ( (data = input.read()) != -1 ) {
+            output.write(Character.toLowerCase(data));
+        }
     }
 }
