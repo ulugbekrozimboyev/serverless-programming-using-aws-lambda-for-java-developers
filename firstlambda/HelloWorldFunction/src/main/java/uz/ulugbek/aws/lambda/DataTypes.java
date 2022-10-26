@@ -41,4 +41,15 @@ public class DataTypes {
 
         return studentScores;
     }
+
+    public ClinicalData getClinicals(Patient patient) {
+
+        System.out.println(patient);
+
+        ClinicalData clinicalData = new ClinicalData();
+        clinicalData.setBp("80/120");
+        clinicalData.setHeartRate("80");
+
+        return clinicalData;
+    }
 }
