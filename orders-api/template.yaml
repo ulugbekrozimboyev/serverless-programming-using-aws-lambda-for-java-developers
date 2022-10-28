@@ -22,3 +22,19 @@ Resources:
           Properties:
             Path: /orders
             Method: POST
+  ReadOrdersFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: ordersapi
+      Handler: uz.ulugbek.aws.lambda.orderapi.ReadOrdersLambda::getOrder
+      Runtime: java11
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Timeout: 30
+      Events:
+        OrderEvents:
+          Type: Api
+          Properties:
+            Path: /orders
+            Method: GET
