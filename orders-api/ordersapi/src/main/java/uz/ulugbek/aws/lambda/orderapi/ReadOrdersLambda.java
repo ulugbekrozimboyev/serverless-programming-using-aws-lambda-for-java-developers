@@ -23,6 +23,8 @@ public class ReadOrdersLambda {
     public ReadOrdersLambda() {
         this.mapper = new ObjectMapper();
         this.amazonDynamoDB = AmazonDynamoDBClientBuilder.defaultClient();
+        // this comment is logged only first time
+        System.out.println("---------------- Init ReadOrdersLambda ------------------------");
     }
 
 
