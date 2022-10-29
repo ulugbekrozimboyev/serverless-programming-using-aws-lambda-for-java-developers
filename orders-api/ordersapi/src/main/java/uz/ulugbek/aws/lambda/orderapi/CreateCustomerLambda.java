@@ -8,23 +8,23 @@ import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyRequestEvent;
 import com.amazonaws.services.lambda.runtime.events.APIGatewayProxyResponseEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import uz.ulugbek.aws.lambda.orderapi.dto.OrderDto;
+import uz.ulugbek.aws.lambda.orderapi.dto.CustomerDto;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class CreateOrderLambda {
+public class CreateCustomerLambda {
 
     private final ObjectMapper mapper;
 
     private final DynamoDB dynamoDB;
 
-    public CreateOrderLambda() {
+    public CreateCustomerLambda() {
         this.mapper = new ObjectMapper();
         this.dynamoDB = new DynamoDB(AmazonDynamoDBClientBuilder.defaultClient());
     }
 
-    public APIGatewayProxyResponseEvent createOrder(APIGatewayProxyRequestEvent request) throws JsonProcessingException {
+    public APIGatewayProxyResponseEvent createCustomer(APIGatewayProxyRequestEvent request) throws JsonProcessingException {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
         headers.put("X-Custom-Header", "application/json");
@@ -32,16 +32,17 @@ public class CreateOrderLambda {
         APIGatewayProxyResponseEvent response = new APIGatewayProxyResponseEvent()
                 .withHeaders(headers);
 
-        OrderDto order = mapper.readValue(request.getBody(), OrderDto.class);
+        CustomerDto customer = mapper.readValue(request.getBody(), CustomerDto.class);
 
-        Table table = dynamoDB.getTable(System.getenv("ORDERS_TABLE"));
+        Table table = dynamoDB.getTable(System.getenv("CUSTOMERS_TABLE"));
         Item item = new Item()
-                .withPrimaryKey("id", order.getId())
-                .withString("itemName", order.getItemName())
-                .withInt("quantity", order.getQuantity());
+                .withPrimaryKey("id", customer.getId())
+                .withString("firstName", customer.getFirstName())
+                .withString("lastName", customer.getLastName())
+                .withDouble("rewardPoints", customer.getRewardPoints());
         table.putItem(item);
 
-        String output = String.format("{ \"message\": \"Order saved with id: %s\" }", order.getId());
+        String output = String.format("{ \"message\": \"Customer saved with id: %s\" }", customer.getId());
         return response
                 .withStatusCode(200)
                 .withBody(output);

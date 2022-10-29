@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.io.Serializable;
 
-public class Order implements Serializable {
+public class OrderDto implements Serializable {
     @JsonProperty("id")
     private int id;
     @JsonProperty("itemName")
@@ -12,10 +12,10 @@ public class Order implements Serializable {
     @JsonProperty("quantity")
     private int quantity;
 
-    public Order() {
+    public OrderDto() {
     }
 
-    public Order(int id, String itemName, int quantity) {
+    public OrderDto(int id, String itemName, int quantity) {
         this.id = id;
         this.itemName = itemName;
         this.quantity = quantity;
