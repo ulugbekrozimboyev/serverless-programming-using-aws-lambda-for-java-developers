@@ -12,13 +12,25 @@ Globals:
       - x86_64
     MemorySize: 512
     Timeout: 30
+    Environment:
+      Variables:
+        ORDERS_TABLE: !Ref OrdersTable
 
 Resources:
+  OrdersTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: id
+        Type: Number
   CreateOrderFunction:
     Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
     Properties:
       CodeUri: ordersapi
       Handler: uz.ulugbek.aws.lambda.orderapi.CreateOrderLambda::createOrder
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OrdersTable
       Events:
         OrderEvents:
           Type: Api
@@ -30,6 +42,9 @@ Resources:
     Properties:
       CodeUri: ordersapi
       Handler: uz.ulugbek.aws.lambda.orderapi.ReadOrdersLambda::getOrder
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref OrdersTable
       Events:
         OrderEvents:
           Type: Api
