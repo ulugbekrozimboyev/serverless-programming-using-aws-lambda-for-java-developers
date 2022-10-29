@@ -17,6 +17,15 @@ import java.util.stream.Collectors;
 
 public class ReadOrdersLambda {
 
+    private final ObjectMapper mapper;
+    private final AmazonDynamoDB amazonDynamoDB;
+
+    public ReadOrdersLambda() {
+        this.mapper = new ObjectMapper();
+        this.amazonDynamoDB = AmazonDynamoDBClientBuilder.defaultClient();
+    }
+
+
     public APIGatewayProxyResponseEvent getOrder(APIGatewayProxyRequestEvent request) throws JsonProcessingException {
         Map<String, String> headers = new HashMap<>();
         headers.put("Content-Type", "application/json");
@@ -26,7 +35,6 @@ public class ReadOrdersLambda {
                 .withHeaders(headers);
 
 
-        AmazonDynamoDB amazonDynamoDB = AmazonDynamoDBClientBuilder.defaultClient();
         ScanResult result = amazonDynamoDB.scan(new ScanRequest().withTableName(System.getenv("ORDERS_TABLE")));
         List<Order> orders = result.getItems()
                 .stream()
@@ -38,7 +46,6 @@ public class ReadOrdersLambda {
                 .collect(Collectors.toList());
 
 
-        ObjectMapper mapper = new ObjectMapper();
 
         return response
                 .withStatusCode(200)
