@@ -8,6 +8,8 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uz.ulugbek.aws.lambda.s3sns.dto.StudentDto;
 
 import java.io.IOException;
@@ -26,6 +28,8 @@ public class StudentS3Listener {
     private final AmazonSNS amazonSNS = AmazonSNSClientBuilder.defaultClient();
     private final ObjectMapper mapper = new ObjectMapper();
 
+    private final Logger logger = LoggerFactory.getLogger(StudentS3Listener.class);
+
     public void studentHandler(S3Event event) {
         event.getRecords().forEach(record -> {
             S3ObjectInputStream s3ObjectInputStream = amazonS3.getObject(record.getS3().getBucket().getName(),
@@ -36,11 +40,11 @@ public class StudentS3Listener {
                         Arrays.asList(mapper.readValue(s3ObjectInputStream, StudentDto[].class));
 
                 s3ObjectInputStream.close();
-                System.out.println(studentList);
+                logger.info(studentList.toString());
                 updateGrades(studentList);
                 publishStudentEvents(studentList);
             } catch (IOException e) {
-                e.printStackTrace();
+                logger.error("Student parse error: ", e);
             }
         });
     }
@@ -53,15 +57,13 @@ public class StudentS3Listener {
                         mapper.writeValueAsString(studentDto)
                 );
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                logger.error("Student publish error: ", e);
             }
         });
     }
 
     private void updateGrades(List<StudentDto> studentList) {
-        studentList.stream().forEach(studentDto -> {
-            studentDto.setGrade(getGradeByTestScore(studentDto.getTestScore()));
-        });
+        studentList.forEach(studentDto -> studentDto.setGrade(getGradeByTestScore(studentDto.getTestScore())));
     }
 
     private String getGradeByTestScore(Integer testScore) {

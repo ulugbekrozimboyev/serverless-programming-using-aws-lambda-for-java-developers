@@ -1,7 +1,6 @@
 package uz.ulugbek.aws.lambda.s3sns;
 
 import com.amazonaws.services.lambda.runtime.Context;
-import com.amazonaws.services.lambda.runtime.LambdaLogger;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -15,8 +14,6 @@ import org.slf4j.LoggerFactory;
 import uz.ulugbek.aws.lambda.s3sns.dto.PatientCheckoutEventDto;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Arrays;
 import java.util.List;
 
@@ -29,7 +26,7 @@ public class PatientCheckoutLambda {
 
     private final Logger logger = LoggerFactory.getLogger(PatientCheckoutLambda.class);
 
-    public void handler(S3Event event, Context context) {
+    public void handler(S3Event event) {
 
         event.getRecords().forEach(record -> {
             S3ObjectInputStream s3ObjectInputStream = amazonS3.getObject(
@@ -60,7 +57,7 @@ public class PatientCheckoutLambda {
                         mapper.writeValueAsString(patientCheckoutEvent)
                 );
             } catch (JsonProcessingException e) {
-                e.printStackTrace();
+                logger.error("Patient publish error: ", e);
             }
         });
     }
