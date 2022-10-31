@@ -4,6 +4,9 @@ import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
+import com.amazonaws.services.sns.AmazonSNS;
+import com.amazonaws.services.sns.AmazonSNSClientBuilder;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import uz.ulugbek.aws.lambda.s3sns.dto.PatientCheckoutEventDto;
 
@@ -13,8 +16,10 @@ import java.util.List;
 
 public class PatientCheckoutLambda {
 
-    AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient();
-    ObjectMapper mapper = new ObjectMapper();
+    private final AmazonS3 amazonS3 = AmazonS3ClientBuilder.defaultClient();
+    private final AmazonSNS amazonSNS = AmazonSNSClientBuilder.defaultClient();
+    private final ObjectMapper mapper = new ObjectMapper();
+    private final String SNS_TOPIC = System.getenv("PATIENT_CHECKOUT_TOPIC");
 
     public void handler(S3Event event) {
         event.getRecords().forEach(record -> {
@@ -25,9 +30,23 @@ public class PatientCheckoutLambda {
                 List<PatientCheckoutEventDto> patientCheckoutLambdaList =
                         Arrays.asList(mapper.readValue(s3ObjectInputStream, PatientCheckoutEventDto[].class));
 
+                s3ObjectInputStream.close();
                 System.out.println(patientCheckoutLambdaList);
-
+                publishPatiantEvents(patientCheckoutLambdaList);
             } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
+    private void publishPatiantEvents(List<PatientCheckoutEventDto> patientCheckoutLambdaList) {
+        patientCheckoutLambdaList.forEach(patientCheckoutEvent -> {
+            try {
+                amazonSNS.publish(
+                        SNS_TOPIC,
+                        mapper.writeValueAsString(patientCheckoutEvent)
+                );
+            } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
         });
