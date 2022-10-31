@@ -1,0 +1,17 @@
+[
+  {
+    "rollNo": 1,
+    "name":"Bharath",
+    "testScore": 65
+  },
+  {
+    "rollNo": 2,
+    "name":"Sarath",
+    "testScore": 75
+  },
+  {
+    "rollNo": 3,
+    "name":"Marath",
+    "testScore": 75
+  }
+]

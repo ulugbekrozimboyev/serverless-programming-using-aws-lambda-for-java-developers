@@ -46,16 +46,46 @@ Resources:
     Properties:
       CodeUri: patientcheckout
       Handler: uz.ulugbek.aws.lambda.s3sns.BillManagementLambda::handler
-      Policies:
-        - S3ReadPolicy:
-            BucketName: !Sub ${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
-      Environment: 
-        Variables:
-          PATIENT_CHECKOUT_TOPIC: !Ref PatientCheckoutTopic
-          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 
       Events:
         SNSEvent:
           Type: SNS
           Properties:
             Topic: !Ref PatientCheckoutTopic
+# assignment
+  StudentCheckoutBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub student-${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+  StudentCheckoutTopic:
+    Type: AWS::SNS::Topic
+  StudentCheckoutLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: patientcheckout
+      Handler: uz.ulugbek.aws.lambda.s3sns.StudentS3Listener::studentHandler
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub student-${AWS::StackName}-${AWS::AccountId}-${AWS::Region}
+        - SNSPublishMessagePolicy:
+            TopicName: !GetAtt StudentCheckoutTopic.TopicName
+      Environment: 
+        Variables:
+          STUDENT_CHECKOUT_TOPIC: !Ref StudentCheckoutTopic
+          JAVA_TOOL_OPTIONS: -XX:+TieredCompilation -XX:TieredStopAtLevel=1 
+      Events:
+        S3Event:
+          Type: S3 
+          Properties:
+            Bucket: !Ref StudentCheckoutBucket
+            Events: s3:ObjectCreated:*
+  StudentSNSListenerFunction:
+    Type: AWS::Serverless::Function 
+    Properties:
+      CodeUri: patientcheckout
+      Handler: uz.ulugbek.aws.lambda.s3sns.StudentSNSListener::studentHandler
+      Events:
+        SNSEvent:
+          Type: SNS
+          Properties:
+            Topic: !Ref StudentCheckoutTopic
 
