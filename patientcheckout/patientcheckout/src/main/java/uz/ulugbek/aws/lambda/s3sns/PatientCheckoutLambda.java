@@ -10,6 +10,8 @@ import com.amazonaws.services.sns.AmazonSNS;
 import com.amazonaws.services.sns.AmazonSNSClientBuilder;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import uz.ulugbek.aws.lambda.s3sns.dto.PatientCheckoutEventDto;
 
 import java.io.IOException;
@@ -25,9 +27,10 @@ public class PatientCheckoutLambda {
     private final ObjectMapper mapper = new ObjectMapper();
     private final String SNS_TOPIC = System.getenv("PATIENT_CHECKOUT_TOPIC");
 
+    private final Logger logger = LoggerFactory.getLogger(PatientCheckoutLambda.class);
+
     public void handler(S3Event event, Context context) {
 
-        LambdaLogger logger = context.getLogger();
         event.getRecords().forEach(record -> {
             S3ObjectInputStream s3ObjectInputStream = amazonS3.getObject(
                         record.getS3().getBucket().getName(),
@@ -35,18 +38,16 @@ public class PatientCheckoutLambda {
                     )
                     .getObjectContent();
             try {
-                logger.log("Reading data from S3");
+                logger.info("Reading data from S3");
                 List<PatientCheckoutEventDto> patientCheckoutLambdaList =
                         Arrays.asList(mapper.readValue(s3ObjectInputStream, PatientCheckoutEventDto[].class));
 
                 s3ObjectInputStream.close();
-                logger.log(patientCheckoutLambdaList.toString());
-                logger.log("Message being published to SNS");
+                logger.info(patientCheckoutLambdaList.toString());
+                logger.info("Message being published to SNS");
                 publishPatiantEvents(patientCheckoutLambdaList);
             } catch (IOException e) {
-                StringWriter stringWriter = new StringWriter();
-                e.printStackTrace(new PrintWriter(stringWriter));
-                logger.log(stringWriter.toString());
+                logger.error("Exception is: ", e);
             }
         });
     }
