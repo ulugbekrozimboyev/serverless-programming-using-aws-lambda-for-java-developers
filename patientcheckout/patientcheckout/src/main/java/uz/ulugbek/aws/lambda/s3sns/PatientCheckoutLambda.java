@@ -1,6 +1,5 @@
 package uz.ulugbek.aws.lambda.s3sns;
 
-import com.amazonaws.services.lambda.runtime.Context;
 import com.amazonaws.services.lambda.runtime.events.S3Event;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
@@ -45,6 +44,7 @@ public class PatientCheckoutLambda {
                 publishPatiantEvents(patientCheckoutLambdaList);
             } catch (IOException e) {
                 logger.error("Exception is: ", e);
+                throw new RuntimeException(e);
             }
         });
     }
@@ -58,6 +58,7 @@ public class PatientCheckoutLambda {
                 );
             } catch (JsonProcessingException e) {
                 logger.error("Patient publish error: ", e);
+                throw new RuntimeException(e);
             }
         });
     }
